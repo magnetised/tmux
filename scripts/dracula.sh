@@ -88,7 +88,7 @@ main()
 
   # set length 
   tmux set-option -g status-left-length 100
-  tmux set-option -g status-right-length 100
+  tmux set-option -g status-right-length 120
 
   # pane border styling
   if $show_border_contrast; then
