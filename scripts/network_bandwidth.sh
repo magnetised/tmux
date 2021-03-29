@@ -64,11 +64,7 @@ get_bandwidth_for_osx() {
 }
 
 get_bandwidth_for_linux() {
-  netstat -ie | awk '
-    match($0, /RX([[:space:]]packets[[:space:]][[:digit:]]+)?[[:space:]]+bytes[:[:space:]]([[:digit:]]+)/, rx) { rx_sum+=rx[2]; }
-    match($0, /TX([[:space:]]packets[[:space:]][[:digit:]]+)?[[:space:]]+bytes[:[:space:]]([[:digit:]]+)/, tx) { tx_sum+=tx[2]; }
-    END { print rx_sum, tx_sum }
-  '
+  cat /proc/net/dev | tail -n +3 | awk '{rx+=$2;} {tx+=$10;} END {print rx, tx;}'
 }
 
 get_bandwidth() {
