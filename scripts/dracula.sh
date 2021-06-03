@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# setting the locale, some users have issues with different locales, this forces the correct one
+export LC_ALL=en_US.UTF-8
 
 get_tmux_option() {
   local option=$1
@@ -21,8 +23,11 @@ main()
   show_network=$(get_tmux_option "@dracula-show-network" true)
   show_weather=$(get_tmux_option "@dracula-show-weather" true)
   show_fahrenheit=$(get_tmux_option "@dracula-show-fahrenheit" true)
+  show_location=$(get_tmux_option "@dracula-show-location" true)
   show_powerline=$(get_tmux_option "@dracula-show-powerline" false)
+  show_flags=$(get_tmux_option "@dracula-show-flags" false)
   show_left_icon=$(get_tmux_option "@dracula-show-left-icon" smiley)
+  show_left_icon_padding=$(get_tmux_option "@dracula-left-icon-padding" 1)
   show_military=$(get_tmux_option "@dracula-military-time" false)
   show_timezone=$(get_tmux_option "@dracula-show-timezone" true)
   show_left_sep=$(get_tmux_option "@dracula-show-left-sep" )
@@ -47,19 +52,26 @@ main()
   red='#ff5555'
   pink='#ff79c6'
   yellow='#f1fa8c'
-  
+
 
   # Handle left icon configuration
   case $show_left_icon in
       smiley)
-          left_icon="☺ ";;
+          left_icon="☺";;
       session)
-          left_icon="#S ";;
+          left_icon="#S";;
       window)
-	  left_icon="#W ";;
+          left_icon="#W";;
       *)
           left_icon=$show_left_icon;;
   esac
+
+  # Handle left icon padding
+  padding=""
+  if [ "$show_left_icon_padding" -gt "0" ]; then
+	  padding="$(printf '%*s' $show_left_icon_padding)"
+  fi
+  left_icon="$left_icon$padding"
 
   # Handle powerline option
   if $show_powerline; then
@@ -69,7 +81,7 @@ main()
 
   # start weather script in background
   if $show_weather; then
-    $current_dir/sleep_weather.sh $show_fahrenheit &
+    $current_dir/sleep_weather.sh $show_fahrenheit $show_location &
   fi
 
   # Set timezone unless hidden by configuration
@@ -80,13 +92,26 @@ main()
           timezone="#(date +%Z)";;
   esac
 
+  case $show_flags in
+    false)
+      flags=""
+      current_flags="";;
+    true)
+      flags="#{?window_flags,#[fg=${dark_purple}]#{window_flags},}"
+      current_flags="#{?window_flags,#[fg=${light_purple}]#{window_flags},}"
+  esac
+
   # sets refresh interval to every 5 seconds
   tmux set-option -g status-interval $show_refresh
 
-  # set clock to 12 hour by default
-  tmux set-option -g clock-mode-style 12
+  # set the prefix + t time format
+  if $show_military; then
+	tmux set-option -g clock-mode-style 24
+  else
+	tmux set-option -g clock-mode-style 12
+  fi
 
-  # set length 
+  # set length
   tmux set-option -g status-left-length 100
   tmux set-option -g status-right-length 120
 
@@ -135,7 +160,7 @@ main()
       if $show_gpu_usage; then
 	 tmux set-option -ga status-right "#[fg=${pink},bg=${powerbg},nobold,nounderscore,noitalics] ${right_sep}#[fg=${dark_gray},bg=${pink}] #($current_dir/gpu_usage.sh)"
 	 powerbg=${pink}
-      fi	
+      fi
 
       if $show_network; then # network
         tmux set-option -ga status-right "#[fg=${cyan},bg=${powerbg},nobold,nounderscore,noitalics] ${right_sep}#[fg=${dark_gray},bg=${cyan}] #($current_dir/network_bandwidth.sh)"
@@ -159,8 +184,8 @@ main()
         fi
       fi
 
-      tmux set-window-option -g window-status-current-format "#[fg=${gray},bg=${dark_purple}]${left_sep}#[fg=${white},bg=${dark_purple}] #I #W #[fg=${dark_purple},bg=${gray}]${left_sep}"
-  
+      tmux set-window-option -g window-status-current-format "#[fg=${gray},bg=${dark_purple}]${left_sep}#[fg=${white},bg=${dark_purple}] #I #W${current_flags} #[fg=${dark_purple},bg=${gray}]${left_sep}"
+
   # Non Powerline Configuration
   else
     tmux set-option -g status-left "#[bg=${green},fg=${dark_gray}]#{?client_prefix,#[bg=${yellow}],} ${left_icon}"
@@ -180,7 +205,7 @@ main()
 
       if $show_gpu_usage; then
 	tmux set-option -ga status-right "#[fg=${dark_gray},bg=${pink}] #($current_dir/gpu_usage.sh) "
-      fi	
+      fi
 
       if $show_network; then # network
         tmux set-option -ga status-right "#[fg=${dark_gray},bg=${cyan}] #($current_dir/network.sh) "
@@ -202,11 +227,13 @@ main()
         fi
       fi
 
-      tmux set-window-option -g window-status-current-format "#[fg=${white},bg=${dark_purple}] #I #W "
+      tmux set-window-option -g window-status-current-format "#[fg=${white},bg=${dark_purple}] #I #W${current_flags} "
 
   fi
-  
-  tmux set-window-option -g window-status-format "#[fg=${white}]#[bg=${gray}] #I #W "
+
+  tmux set-window-option -g window-status-format "#[fg=${white}]#[bg=${gray}] #I #W${flags}"
+  tmux set-window-option -g window-status-activity-style "bold"
+  tmux set-window-option -g window-status-bell-style "bold"
 }
 
 # run main function
