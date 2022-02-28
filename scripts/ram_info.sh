@@ -21,7 +21,7 @@ get_percent()
 			# percent=$(free -m | awk 'NR==2{printf "%.1f%%\n", $3*100/$2}')
 			total_mem_gb=$(free -g | awk '/^Mem/ {print $2}')
 			used_mem=$(free -g | awk '/^Mem/ {print $3}')
-			total_mem=$(free -h | awk '/^Mem/ {print $2}')
+			total_mem=$(free -g | awk '/^Mem/ {print $2}')
 			if (( $total_mem_gb == 0)); then
 				memory_usage=$(free -m | awk '/^Mem/ {print $3}')
 				total_mem_mb=$(free -m | awk '/^Mem/ {print $2}')
@@ -31,7 +31,7 @@ get_percent()
 				echo $memory_usage\M\B/$total_mem\G\B
 			else
 				memory_usage=$(free -g | awk '/^Mem/ {print $3}')
-				echo $memory_usage\G\B/$total_mem\G\B
+				echo $memory_usage/$total_mem\G\i\B
 			fi
 		;;
 
