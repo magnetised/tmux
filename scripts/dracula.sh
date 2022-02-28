@@ -119,7 +119,7 @@ main()
   if $show_border_contrast; then
     tmux set-option -g pane-active-border-style "fg=${light_purple}"
   else
-    tmux set-option -g pane-active-border-style "fg=${dark_purple}"
+    tmux set-option -g pane-active-border-style "fg=${green}"
   fi
   tmux set-option -g pane-border-style "fg=${gray}"
 
@@ -184,7 +184,7 @@ main()
         fi
       fi
 
-      tmux set-window-option -g window-status-current-format "#[fg=${gray},bg=${dark_purple}]${left_sep}#[fg=${white},bg=${dark_purple}] #I #W${current_flags} #[fg=${dark_purple},bg=${gray}]${left_sep}"
+      tmux set-window-option -g window-status-current-format "#[fg=${gray},bg=${dark_purple}]${left_sep}#[fg=${white},bg=${dark_purple}] #I#[fg=${dark_gray}]/#[fg=${white}]#( $current_dir/working_repo.sh \"#{pane_current_path}\")#W${current_flags} #[fg=${dark_purple},bg=${gray}]${left_sep}"
 
   # Non Powerline Configuration
   else
@@ -230,8 +230,8 @@ main()
       tmux set-window-option -g window-status-current-format "#[fg=${white},bg=${dark_purple}] #I #W${current_flags} "
 
   fi
-
-  tmux set-window-option -g window-status-format "#[fg=${white}]#[bg=${gray}] #I #W${flags}"
+# $current_dir/working_repo.sh
+  tmux set-window-option -g window-status-format "#[fg=${white}]#[bg=${gray}] #I#[fg=${dark_gray}]/#[fg=${white}]#( $current_dir/working_repo.sh \"#{pane_current_path}\")#W${flags}"
   tmux set-window-option -g window-status-activity-style "bold"
   tmux set-window-option -g window-status-bell-style "bold"
 }
