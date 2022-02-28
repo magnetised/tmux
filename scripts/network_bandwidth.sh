@@ -101,7 +101,7 @@ main() {
 
   if [ -z "$old_value" ]; then
     $(set_tmux_option "@network-bandwidth-previous-value" "-")
-    echo -n "Please wait..."
+    echo -n "Please wait...................."
     return 0
   else
     local os=$(os_type)
